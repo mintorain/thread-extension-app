@@ -1,0 +1,57 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ThreadHook MVP</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>ThreadHook MVP</h1>
+
+    <label class="label">Backend URL</label>
+    <input id="backendUrl" class="input" type="text" value="http://127.0.0.1:8000" />
+
+    <label class="label">Provider</label>
+    <select id="provider" class="input">
+      <option value="claude">claude</option>
+      <option value="chatgpt">chatgpt</option>
+      <option value="gemini">gemini</option>
+      <option value="grok">grok</option>
+    </select>
+
+    <label class="label">API Key</label>
+    <input id="apiKey" class="input" type="password" placeholder="sk-..." />
+
+    <div class="row">
+      <button id="saveKeyBtn">키 저장</button>
+      <button id="extractBtn">페이지 추출</button>
+    </div>
+
+    <label class="label">Tone</label>
+    <select id="tone" class="input">
+      <option value="professional">professional</option>
+      <option value="neutral">neutral</option>
+      <option value="casual">casual</option>
+    </select>
+
+    <label class="label">Length</label>
+    <select id="length" class="input">
+      <option value="medium">medium</option>
+      <option value="short">short</option>
+      <option value="long">long</option>
+    </select>
+
+    <button id="generateBtn" class="primary">스레드 생성</button>
+
+    <label class="label">상태</label>
+    <div id="status" class="status">대기 중</div>
+
+    <label class="label">결과</label>
+    <textarea id="output" class="output" readonly></textarea>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

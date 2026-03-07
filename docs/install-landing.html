@@ -1,0 +1,262 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ThreadHook 설치 안내</title>
+  <style>
+    :root {
+      --bg: #f7f6f2;
+      --ink: #1f2937;
+      --muted: #5b6471;
+      --line: #d7d9df;
+      --brand: #0f766e;
+      --brand-2: #164e63;
+      --card: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SUIT Variable", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, #d6efe8 0%, transparent 35%),
+        radial-gradient(circle at 90% 20%, #f8ebc9 0%, transparent 28%),
+        var(--bg);
+      line-height: 1.6;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 28px 18px 72px; }
+    .hero {
+      background: linear-gradient(130deg, var(--brand), var(--brand-2));
+      color: #fff;
+      border-radius: 20px;
+      padding: 28px 22px;
+      box-shadow: 0 16px 30px rgba(15, 118, 110, 0.25);
+    }
+    .kicker {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(255,255,255,.2);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+    h1 { margin: 0; font-size: clamp(24px, 4vw, 36px); line-height: 1.2; }
+    .sub { margin: 10px 0 0; font-size: 15px; opacity: .95; }
+
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; margin-top: 18px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 6px 20px rgba(30, 41, 59, 0.05);
+    }
+    .span-7 { grid-column: span 7; }
+    .span-5 { grid-column: span 5; }
+    .span-12 { grid-column: span 12; }
+    h2 { margin: 0 0 12px; font-size: 18px; }
+
+    .step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 10px 0; border-top: 1px dashed #d9dde4; }
+    .step:first-of-type { border-top: 0; }
+    .num {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: #e8f4f2; color: var(--brand-2);
+      display: grid; place-items: center; font-weight: 700;
+    }
+    .step-title { font-weight: 700; margin: 0 0 2px; }
+
+    .mono {
+      font-family: Consolas, "Courier New", monospace;
+      background: #f4f7fa;
+      border: 1px solid #dce3ea;
+      border-radius: 8px;
+      padding: 2px 6px;
+      font-size: 13px;
+      display: inline-block;
+    }
+
+    .check { margin: 0; padding: 0; list-style: none; }
+    .check li {
+      border-top: 1px dashed #d9dde4;
+      padding: 10px 0;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .check li:first-child { border-top: 0; }
+
+    .dot {
+      width: 18px; height: 18px; border-radius: 999px;
+      background: #fef3c7; color: #92400e;
+      display: inline-grid; place-items: center;
+      font-size: 12px; font-weight: 700;
+      flex: 0 0 18px; margin-top: 2px;
+    }
+
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    button {
+      border: 0; border-radius: 10px; padding: 10px 12px;
+      background: var(--brand); color: #fff; cursor: pointer; font-weight: 600;
+    }
+    button.secondary { background: #e2e8f0; color: #0f172a; }
+
+    .shots {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .shot {
+      border: 1px solid #dce3ea;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .shot img {
+      width: 100%;
+      display: block;
+      background: #f8fafc;
+    }
+    .cap {
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 1px solid #eef2f7;
+    }
+
+    .warn {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 860px) {
+      .span-7, .span-5, .span-12 { grid-column: span 12; }
+      .shots { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="kicker">ThreadHook MVP</div>
+      <h1>확장앱 설치 & 첫 실행 온보딩</h1>
+      <p class="sub">아래 순서를 따라가면 설치부터 스레드 생성까지 한 번에 확인할 수 있습니다.</p>
+    </section>
+
+    <section class="grid">
+      <article class="card span-7">
+        <h2>1) Chrome 확장앱 설치</h2>
+
+        <div class="step">
+          <div class="num">1</div>
+          <div>
+            <p class="step-title">확장 프로그램 페이지 열기</p>
+            <div class="mono">chrome://extensions</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">2</div>
+          <div>
+            <p class="step-title">개발자 모드 활성화</p>
+            <p>우측 상단 <strong>개발자 모드</strong> 토글을 켭니다.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">3</div>
+          <div>
+            <p class="step-title">압축해제된 확장 프로그램 로드</p>
+            <p>개발자 모드를 켜면 상단에 <strong>"압축해제된 확장 프로그램을 로드"</strong> 버튼이 표시됩니다.</p>
+            <p>사용자가 <strong>압축을 푼 폴더</strong>에서 <span class="mono">thread-extension-app</span> 폴더를 선택하세요.</p>
+            <div class="mono" id="extPath">예시: C:\Users\사용자이름\Downloads\threadhook\thread-extension-app</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="copyPathBtn">예시 경로 복사</button>
+          <button id="copyChromeBtn" class="secondary">chrome://extensions 복사</button>
+        </div>
+      </article>
+
+      <article class="card span-5">
+        <h2>2) 실행 전 체크리스트</h2>
+        <ul class="check">
+          <li><span class="dot">!</span><span>백엔드 실행: FastAPI(<span class="mono">http://127.0.0.1:8000</span>) 또는 NestJS(<span class="mono">http://127.0.0.1:3000</span>)</span></li>
+          <li><span class="dot">!</span><span>확장 아이콘 클릭 후 Backend URL 입력</span></li>
+          <li><span class="dot">!</span><span>Provider 선택 + API Key 저장</span></li>
+          <li><span class="dot">!</span><span>페이지 추출 → 스레드 생성</span></li>
+          <li><span class="dot">!</span><span>생성 완료 시 클립보드 자동복사 확인</span></li>
+        </ul>
+      </article>
+
+      <article class="card span-12">
+        <h2>3) 실제 화면 스크린샷</h2>
+        <div class="shots">
+          <figure class="shot">
+            <img src="assets/chrome-extensions.png" alt="Chrome 확장 프로그램 페이지 스크린샷" />
+            <figcaption class="cap">설치 화면: 우측 상단 개발자 모드를 먼저 켠 뒤, 상단의 "압축해제된 확장 프로그램을 로드" 버튼을 사용합니다.</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="assets/extension-popup.png" alt="ThreadHook 팝업 스크린샷" />
+            <figcaption class="cap">팝업 화면: Backend URL, Provider, API Key 입력 후 페이지 추출/스레드 생성을 실행합니다.</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <article class="card span-12">
+        <h2>4) 자주 생기는 문제</h2>
+        <div class="step">
+          <div class="num">A</div>
+          <div>
+            <p class="step-title">"페이지 추출 실패"가 뜰 때</p>
+            <p>해당 탭을 새로고침하고 확장 팝업을 다시 열어 시도합니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">B</div>
+          <div>
+            <p class="step-title">"생성 실패"가 뜰 때</p>
+            <p>백엔드 서버 실행 여부, Backend URL, API Key 저장 성공 여부를 확인합니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">C</div>
+          <div>
+            <p class="step-title">일부 페이지에서 작동하지 않을 때</p>
+            <p>브라우저 내부 페이지는 콘텐츠 스크립트 제한으로 추출이 안 될 수 있습니다.</p>
+          </div>
+        </div>
+        <div class="warn">확장앱 파일을 수정한 뒤에는 chrome://extensions 에서 해당 확장의 "새로고침"을 눌러 변경사항을 반영하세요.</div>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    const copy = async (text) => {
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('복사되었습니다.');
+      } catch {
+        alert('복사에 실패했습니다. 직접 복사해주세요.');
+      }
+    };
+
+    document.getElementById('copyPathBtn').addEventListener('click', () => {
+      copy(document.getElementById('extPath').textContent.trim());
+    });
+    document.getElementById('copyChromeBtn').addEventListener('click', () => {
+      copy('chrome://extensions');
+    });
+  </script>
+</body>
+</html>
+
+
