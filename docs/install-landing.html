@@ -135,7 +135,36 @@
       font-size: 13px;
       margin-top: 12px;
     }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 16px;
+      font-size: 14px;
+    }
 
+    .contact-item {
+      padding: 8px 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .contact-item strong {
+      display: block;
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 2px;
+    }
+
+    .contact-item a {
+      color: #0f766e;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .contact-item a:hover {
+      text-decoration: underline;
+    }
     @media (max-width: 860px) {
       .span-7, .span-5, .span-12 { grid-column: span 12; }
       .shots { grid-template-columns: 1fr; }
@@ -236,6 +265,22 @@
         </div>
         <div class="warn">확장앱 파일을 수정한 뒤에는 chrome://extensions 에서 해당 확장의 "새로고침"을 눌러 변경사항을 반영하세요.</div>
       </article>
+      <article class="card span-12">
+        <h2>5) 운영/문의 정보</h2>
+        <div class="contact-grid">
+          <div class="contact-item"><strong>기관</strong>미래이음연구소</div>
+          <div class="contact-item"><strong>개발</strong>민토레인</div>
+          <div class="contact-item"><strong>연락처</strong><a href="tel:01033434000">010-3343-4000</a></div>
+          <div class="contact-item"><strong>이메일</strong><a href="mailto:mintorain@gmail.com">mintorain@gmail.com</a></div>
+          <div class="contact-item"><strong>홈페이지</strong><a href="https://mintorain.duonedu.net" target="_blank" rel="noopener noreferrer">https://mintorain.duonedu.net</a></div>
+          <div class="contact-item"><strong>유튜브</strong><a href="https://www.youtube.com/@mintorain7" target="_blank" rel="noopener noreferrer">https://www.youtube.com/@mintorain7</a></div>
+          <div class="contact-item"><strong>인스타그램</strong><a href="https://www.instagram.com/mintorain/" target="_blank" rel="noopener noreferrer">https://www.instagram.com/mintorain/</a></div>
+          <div class="contact-item"><strong>페이스북</strong><a href="https://www.facebook.com/mintorain" target="_blank" rel="noopener noreferrer">https://www.facebook.com/mintorain</a></div>
+          <div class="contact-item"><strong>X</strong><a href="https://x.com/mintorain7" target="_blank" rel="noopener noreferrer">https://x.com/mintorain7</a></div>
+          <div class="contact-item"><strong>카카오톡 오픈채팅</strong><a href="https://open.kakao.com/o/gpLP613g" target="_blank" rel="noopener noreferrer">https://open.kakao.com/o/gpLP613g</a></div>
+          <div class="contact-item"><strong>고객센터</strong><a href="http://pf.kakao.com/_UzjZG/chat" target="_blank" rel="noopener noreferrer">http://pf.kakao.com/_UzjZG/chat</a></div>
+        </div>
+      </article>
     </section>
   </div>
 
@@ -258,5 +303,7 @@
   </script>
 </body>
 </html>
+
+
 
 

@@ -1,10 +1,14 @@
 ﻿(() => {
   const backendUrlEl = document.getElementById('backendUrl');
   const providerEl = document.getElementById('provider');
+  const authMethodEl = document.getElementById('authMethod');
   const apiKeyEl = document.getElementById('apiKey');
   const toneEl = document.getElementById('tone');
   const lengthEl = document.getElementById('length');
+  const apiKeyArea = document.getElementById('apiKeyArea');
+  const oauthArea = document.getElementById('oauthArea');
   const saveKeyBtn = document.getElementById('saveKeyBtn');
+  const oauthRegisterBtn = document.getElementById('oauthRegisterBtn');
   const extractBtn = document.getElementById('extractBtn');
   const generateBtn = document.getElementById('generateBtn');
   const statusEl = document.getElementById('status');
@@ -19,13 +23,19 @@
   function setOutput(msg) {
     outputEl.value = msg;
   }
+
+  function applyAuthMode() {
+    const mode = authMethodEl.value;
+    apiKeyArea.classList.toggle('hidden', mode !== 'api_key');
+    oauthArea.classList.toggle('hidden', mode !== 'oauth');
+  }
+
   async function copyToClipboard(text) {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
       return;
     }
 
-    // Fallback for environments where Clipboard API is restricted.
     outputEl.removeAttribute('readonly');
     outputEl.focus();
     outputEl.select();
@@ -34,11 +44,14 @@
   }
 
   async function loadSettings() {
-    const data = await chrome.storage.local.get(['backendUrl', 'provider', 'tone', 'length']);
+    const data = await chrome.storage.local.get(['backendUrl', 'provider', 'tone', 'length', 'authMethod']);
     if (data.backendUrl) backendUrlEl.value = data.backendUrl;
     if (data.provider) providerEl.value = data.provider;
     if (data.tone) toneEl.value = data.tone;
     if (data.length) lengthEl.value = data.length;
+    if (data.authMethod) authMethodEl.value = data.authMethod;
+
+    applyAuthMode();
   }
 
   async function saveSettings() {
@@ -46,7 +59,8 @@
       backendUrl: backendUrlEl.value.trim(),
       provider: providerEl.value,
       tone: toneEl.value,
-      length: lengthEl.value
+      length: lengthEl.value,
+      authMethod: authMethodEl.value
     });
   }
 
@@ -84,8 +98,44 @@
       throw new Error(`키 저장 실패: ${res.status} ${txt}`);
     }
 
-    const data = await res.json();
-    return data;
+    return res.json();
+  }
+
+  async function checkOAuthStatus(backendUrl, provider) {
+    const res = await fetch(`${backendUrl}/v1/auth/oauth/status?provider=${encodeURIComponent(provider)}`);
+    if (!res.ok) return { connected: false };
+    return res.json();
+  }
+
+  async function startOAuthRegistration() {
+    const backendUrl = backendUrlEl.value.trim();
+    const provider = providerEl.value;
+
+    const startRes = await fetch(`${backendUrl}/v1/auth/oauth/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider })
+    });
+
+    if (!startRes.ok) {
+      const txt = await startRes.text();
+      throw new Error(`OAuth 시작 실패: ${startRes.status} ${txt}`);
+    }
+
+    const startData = await startRes.json();
+    if (!startData.authorizationUrl) throw new Error('OAuth authorization URL이 없습니다.');
+
+    await chrome.tabs.create({ url: startData.authorizationUrl });
+
+    for (let i = 0; i < 25; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const status = await checkOAuthStatus(backendUrl, provider);
+      if (status.connected) {
+        return status;
+      }
+    }
+
+    throw new Error('OAuth 인증 확인 시간 초과. 인증 페이지에서 승인을 완료했는지 확인하세요.');
   }
 
   function formatThread(data) {
@@ -110,6 +160,7 @@
     const provider = providerEl.value;
     const tone = toneEl.value;
     const length = lengthEl.value;
+    const authMethod = authMethodEl.value;
 
     if (!extracted) {
       extracted = await extractCurrentPage();
@@ -128,7 +179,8 @@
         model: null
       },
       providerMode: 'single',
-      provider
+      provider,
+      authMethod
     };
 
     const res = await fetch(`${backendUrl}/v1/generate/thread`, {
@@ -145,12 +197,28 @@
     return res.json();
   }
 
+  authMethodEl.addEventListener('change', async () => {
+    applyAuthMode();
+    await saveSettings();
+  });
+
   saveKeyBtn.addEventListener('click', async () => {
     try {
-      setStatus('키 저장 중...');
+      setStatus('API Key 저장 중...');
       await saveSettings();
       const result = await saveKey();
-      setStatus(`키 저장 완료 (${result.keyStatus || 'ok'})`);
+      setStatus(`API Key 저장 완료 (${result.keyStatus || 'ok'})`);
+    } catch (err) {
+      setStatus(err.message || String(err));
+    }
+  });
+
+  oauthRegisterBtn.addEventListener('click', async () => {
+    try {
+      setStatus('OAuth 인증 시작...');
+      await saveSettings();
+      const status = await startOAuthRegistration();
+      setStatus(`OAuth 등록 완료 (${status.provider}/${status.authType || 'oauth'})`);
     } catch (err) {
       setStatus(err.message || String(err));
     }
@@ -186,4 +254,3 @@
     setStatus('설정 로드 실패');
   });
 })();
-

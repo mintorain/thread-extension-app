@@ -21,11 +21,25 @@
       <option value="grok">grok</option>
     </select>
 
-    <label class="label">API Key</label>
-    <input id="apiKey" class="input" type="password" placeholder="sk-..." />
+    <label class="label">등록 방식</label>
+    <select id="authMethod" class="input">
+      <option value="api_key">API Key</option>
+      <option value="oauth">OAuth 인증</option>
+    </select>
 
-    <div class="row">
-      <button id="saveKeyBtn">키 저장</button>
+    <section id="apiKeyArea">
+      <label class="label">API Key</label>
+      <input id="apiKey" class="input" type="password" placeholder="sk-..." />
+      <button id="saveKeyBtn" class="sub">API Key 저장</button>
+    </section>
+
+    <section id="oauthArea" class="hidden">
+      <label class="label">OAuth 인증</label>
+      <button id="oauthRegisterBtn" class="sub">OAuth 인증 등록</button>
+      <p class="hint">인증 페이지에서 승인하면 자동으로 등록 상태를 확인합니다.</p>
+    </section>
+
+    <div class="row single">
       <button id="extractBtn">페이지 추출</button>
     </div>
 
@@ -50,6 +64,21 @@
 
     <label class="label">결과</label>
     <textarea id="output" class="output" readonly></textarea>
+
+    <section class="footer-info">
+      <div class="footer-title">미래이음연구소 | 개발 민토레인</div>
+      <div class="footer-row">연락처 <a href="tel:01033434000">010-3343-4000</a></div>
+      <div class="footer-row">이메일 <a href="mailto:mintorain@gmail.com">mintorain@gmail.com</a></div>
+      <div class="footer-links">
+        <a href="https://mintorain.duonedu.net" target="_blank" rel="noopener noreferrer">홈페이지</a>
+        <a href="https://www.youtube.com/@mintorain7" target="_blank" rel="noopener noreferrer">유튜브</a>
+        <a href="https://www.instagram.com/mintorain/" target="_blank" rel="noopener noreferrer">인스타</a>
+        <a href="https://www.facebook.com/mintorain" target="_blank" rel="noopener noreferrer">페이스북</a>
+        <a href="https://x.com/mintorain7" target="_blank" rel="noopener noreferrer">X</a>
+        <a href="https://open.kakao.com/o/gpLP613g" target="_blank" rel="noopener noreferrer">오픈채팅</a>
+        <a href="http://pf.kakao.com/_UzjZG/chat" target="_blank" rel="noopener noreferrer">고객센터</a>
+      </div>
+    </section>
   </main>
 
   <script src="popup.js"></script>
