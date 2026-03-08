@@ -11,6 +11,11 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 COPY backend-fastapi/app ./app
 
+# Landing page static files
+COPY docs/index.html ./static/index.html
+COPY docs/assets ./static/assets
+COPY docs/downloads ./static/downloads
+
 EXPOSE 8000
 
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
