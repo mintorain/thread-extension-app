@@ -52,23 +52,12 @@
         <option value="grok">grok</option>
       </select>
 
-      <label class="label">인증 방식</label>
-      <select id="authMethod" class="input">
-        <option value="api_key">API</option>
-        <option value="oauth">OAuth(어소)</option>
-      </select>
-
-      <section id="apiKeyArea">
-        <label class="label">API Key</label>
-        <input id="apiKey" class="input" type="password" placeholder="sk-..." />
+      <label class="label">API Key</label>
+      <input id="apiKey" class="input" type="password" placeholder="sk-..." />
+      <div class="key-actions">
         <button id="saveKeyBtn" class="sub">API 등록</button>
-      </section>
-
-      <section id="oauthArea" class="hidden">
-        <label class="label">OAuth(어소) 인증</label>
-        <button id="oauthRegisterBtn" class="sub">OAuth 인증 시작</button>
-        <p class="hint">인증 페이지 승인 후 등록 상태가 자동 확인됩니다.</p>
-      </section>
+        <a id="getKeyLink" class="key-link" href="#" target="_blank" rel="noopener noreferrer">키 발급받기</a>
+      </div>
 
       <section class="manual">
         <h3>상세 매뉴얼</h3>
@@ -77,9 +66,8 @@
           <summary>1) API Key 등록 (필수)</summary>
           <ol>
             <li>설정(⚙) 아이콘 클릭</li>
-            <li>Backend URL 확인: <code>https://threadhook-api-production.up.railway.app</code> (기본값, 수정 불필요)</li>
             <li>Provider 선택 (claude / chatgpt / gemini / grok)</li>
-            <li>인증 방식: <code>API</code> 선택</li>
+            <li><code>키 발급받기</code> 링크를 눌러 Provider 사이트에서 API Key 복사</li>
             <li>API Key 입력 후 <code>API 등록</code> 클릭</li>
             <li>상태가 <code>API 등록 완료</code>로 표시되면 완료</li>
           </ol>
