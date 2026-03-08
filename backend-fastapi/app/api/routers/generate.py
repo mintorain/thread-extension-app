@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException
 
 from app.schemas.generate import GenerateThreadRequest
 from app.services.generation_service import GenerationService
@@ -23,6 +23,14 @@ async def generate_thread(payload: GenerateThreadRequest) -> dict:
             provider_mode=payload.providerMode,
             provider=payload.provider,
         )
+    except RuntimeError as exc:
+        msg = str(exc)
+        if 'No API key' in msg or 'No OAuth token' in msg:
+            raise HTTPException(
+                status_code=401,
+                detail='API Key 또는 OAuth 인증이 필요합니다. 설정에서 먼저 등록해주세요.',
+            ) from exc
+        raise HTTPException(status_code=503, detail=msg) from exc
     except Exception as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 

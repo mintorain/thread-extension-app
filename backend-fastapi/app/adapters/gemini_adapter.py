@@ -6,8 +6,7 @@ import httpx
 
 from app.adapters.base import GenerateInput, GenerateOptions, GenerateResult, LLMAdapter
 
-_OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
-_DEFAULT_MODEL = 'gpt-4.1'
+_DEFAULT_MODEL = 'gemini-2.0-flash'
 
 
 def _build_prompt(data: GenerateInput, opt: GenerateOptions) -> str:
@@ -47,47 +46,41 @@ def _parse_thread_json(text: str) -> dict:
         }
 
 
-class OpenAIAdapter(LLMAdapter):
-    provider_name = 'chatgpt'
+class GeminiAdapter(LLMAdapter):
+    provider_name = 'gemini'
 
     async def validate_key(self, api_key: str) -> bool:
         key = (api_key or '').strip()
-        if len(key) < 20:
-            return False
-        known_prefixes = ('sk-', 'sk-proj-', 'oai-')
-        if key.startswith(known_prefixes):
-            return True
-        return ' ' not in key and '\t' not in key and '\n' not in key
+        return len(key) >= 10
 
     async def generate_thread(self, api_key: str, data: GenerateInput, opt: GenerateOptions) -> GenerateResult:
         model = opt.model or _DEFAULT_MODEL
         prompt = _build_prompt(data, opt)
+        url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
 
         async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(
-                _OPENAI_API_URL,
-                headers={
-                    'Authorization': f'Bearer {api_key}',
-                    'Content-Type': 'application/json',
-                },
+                url,
+                headers={'Content-Type': 'application/json'},
                 json={
-                    'model': model,
-                    'max_tokens': 1024,
-                    'messages': [
-                        {'role': 'system', 'content': 'JSON 형식으로만 응답하는 SNS 스레드 작성 도우미입니다.'},
-                        {'role': 'user', 'content': prompt},
-                    ],
+                    'contents': [{'parts': [{'text': prompt}]}],
+                    'generationConfig': {'maxOutputTokens': 1024},
                 },
             )
 
         if resp.status_code != 200:
             detail = resp.text[:300]
-            raise RuntimeError(f'OpenAI API error {resp.status_code}: {detail}')
+            raise RuntimeError(f'Gemini API error {resp.status_code}: {detail}')
 
         body = resp.json()
-        raw_text = body.get('choices', [{}])[0].get('message', {}).get('content', '')
-        usage = body.get('usage', {})
+        candidates = body.get('candidates', [])
+        raw_text = ''
+        if candidates:
+            parts = candidates[0].get('content', {}).get('parts', [])
+            if parts:
+                raw_text = parts[0].get('text', '')
 
+        usage = body.get('usageMetadata', {})
         parsed = _parse_thread_json(raw_text)
 
         return GenerateResult(
@@ -98,6 +91,6 @@ class OpenAIAdapter(LLMAdapter):
             insight=parsed.get('insight', ''),
             hashtags=parsed.get('hashtags', []),
             source=data.url,
-            token_in=usage.get('prompt_tokens', 0),
-            token_out=usage.get('completion_tokens', 0),
+            token_in=usage.get('promptTokenCount', 0),
+            token_out=usage.get('candidatesTokenCount', 0),
         )

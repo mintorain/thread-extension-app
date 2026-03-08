@@ -6,8 +6,8 @@ import httpx
 
 from app.adapters.base import GenerateInput, GenerateOptions, GenerateResult, LLMAdapter
 
-_OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
-_DEFAULT_MODEL = 'gpt-4.1'
+_GROK_API_URL = 'https://api.x.ai/v1/chat/completions'
+_DEFAULT_MODEL = 'grok-3'
 
 
 def _build_prompt(data: GenerateInput, opt: GenerateOptions) -> str:
@@ -47,17 +47,12 @@ def _parse_thread_json(text: str) -> dict:
         }
 
 
-class OpenAIAdapter(LLMAdapter):
-    provider_name = 'chatgpt'
+class GrokAdapter(LLMAdapter):
+    provider_name = 'grok'
 
     async def validate_key(self, api_key: str) -> bool:
         key = (api_key or '').strip()
-        if len(key) < 20:
-            return False
-        known_prefixes = ('sk-', 'sk-proj-', 'oai-')
-        if key.startswith(known_prefixes):
-            return True
-        return ' ' not in key and '\t' not in key and '\n' not in key
+        return key.startswith('xai-') and len(key) > 10
 
     async def generate_thread(self, api_key: str, data: GenerateInput, opt: GenerateOptions) -> GenerateResult:
         model = opt.model or _DEFAULT_MODEL
@@ -65,7 +60,7 @@ class OpenAIAdapter(LLMAdapter):
 
         async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(
-                _OPENAI_API_URL,
+                _GROK_API_URL,
                 headers={
                     'Authorization': f'Bearer {api_key}',
                     'Content-Type': 'application/json',
@@ -82,7 +77,7 @@ class OpenAIAdapter(LLMAdapter):
 
         if resp.status_code != 200:
             detail = resp.text[:300]
-            raise RuntimeError(f'OpenAI API error {resp.status_code}: {detail}')
+            raise RuntimeError(f'Grok API error {resp.status_code}: {detail}')
 
         body = resp.json()
         raw_text = body.get('choices', [{}])[0].get('message', {}).get('content', '')

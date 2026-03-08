@@ -15,8 +15,9 @@ from app.services.key_service import key_service
 
 router = APIRouter(tags=['Auth'])
 
-# NOTE: For production, load this from secure env/secret store.
-_STATE_SECRET = b'threadhook-oauth-state-secret-change-me'
+import os as _os
+
+_STATE_SECRET = _os.environ.get('OAUTH_STATE_SECRET', 'threadhook-oauth-state-secret-change-me').encode('utf-8')
 _STATE_TTL_SECONDS = 15 * 60
 
 

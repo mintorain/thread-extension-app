@@ -17,4 +17,4 @@ class GenerateThreadRequest(BaseModel):
     options: GenerateOptions
     providerMode: str = 'priority'
     provider: Optional[str] = None
-
+    authMethod: str = 'api_key'

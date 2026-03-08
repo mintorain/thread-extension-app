@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   const backendUrlEl = document.getElementById('backendUrl');
   const providerEl = document.getElementById('provider');
   const authMethodEl = document.getElementById('authMethod');
@@ -18,19 +18,42 @@
 
   const extractBtn = document.getElementById('extractBtn');
   const generateBtn = document.getElementById('generateBtn');
+  const copyBtn = document.getElementById('copyBtn');
   const statusEl = document.getElementById('status');
   const outputEl = document.getElementById('output');
 
   let extracted = null;
   let suppressAutoOAuth = true;
   let oauthInProgress = false;
+  let lastOutput = '';
 
-  function setStatus(msg) {
-    statusEl.textContent = msg;
+  function setStatus(msg, type) {
+    statusEl.className = 'status';
+    if (type === 'error') {
+      statusEl.className = 'status status-error';
+      statusEl.innerHTML = msg;
+    } else if (type === 'success') {
+      statusEl.className = 'status status-success';
+      statusEl.innerHTML = msg;
+    } else if (type === 'loading') {
+      statusEl.className = 'status status-loading';
+      statusEl.innerHTML = '<span class="spinner"></span>' + msg;
+    } else {
+      statusEl.textContent = msg;
+    }
   }
 
   function setOutput(msg) {
     outputEl.value = msg;
+    lastOutput = msg;
+    if (copyBtn) {
+      copyBtn.classList.toggle('hidden', !msg);
+    }
+  }
+
+  function setButtonsDisabled(disabled) {
+    extractBtn.disabled = disabled;
+    generateBtn.disabled = disabled;
   }
 
   function showSettingsPanel(show) {
@@ -72,7 +95,7 @@
   async function apiFetch(path, options = {}) {
     const backendUrl = normalizeBackendUrl(backendUrlEl.value);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(new Error('timeout')), 10000);
+    const timeout = setTimeout(() => controller.abort(new Error('timeout')), 60000);
 
     try {
       const res = await fetch(`${backendUrl}${path}`, {
@@ -141,9 +164,14 @@
 
   async function extractCurrentPage() {
     const tab = await getActiveTab();
+
+    if (tab.url && (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://'))) {
+      throw new Error('Chrome 내부 페이지에서는 콘텐츠를 추출할 수 없습니다. 뉴스/블로그 페이지에서 시도하세요.');
+    }
+
     const response = await chrome.tabs.sendMessage(tab.id, { type: 'THREADHOOK_EXTRACT' });
     if (!response || !response.ok) {
-      throw new Error('페이지 추출 실패. 새로고침 후 다시 시도하세요.');
+      throw new Error('페이지 추출 실패. 페이지를 새로고침한 후 다시 시도하세요.');
     }
     extracted = response.payload;
     return extracted;
@@ -221,6 +249,7 @@
     const t = data.thread || {};
     const points = Array.isArray(t.points) ? t.points.map((p, i) => `${i + 1}. ${p}`).join('\n') : '';
     const hashtags = Array.isArray(t.hashtags) ? t.hashtags.join(' ') : '';
+    const metrics = data.metrics || {};
     return [
       `[${data.providerUsed}/${data.model}]`,
       '',
@@ -230,8 +259,10 @@
       '',
       `인사이트: ${t.insight || ''}`,
       `출처: ${t.source || ''}`,
-      hashtags
-    ].join('\n');
+      hashtags,
+      '',
+      metrics.tokenIn ? `(토큰: ${metrics.tokenIn} in / ${metrics.tokenOut} out)` : '',
+    ].filter(Boolean).join('\n');
   }
 
   async function generateThread() {
@@ -285,12 +316,12 @@
 
   testBackendBtn.addEventListener('click', async () => {
     try {
-      setStatus('백엔드 연결 테스트 중...');
+      setStatus('백엔드 연결 테스트 중...', 'loading');
       await saveSettings();
       await testBackendConnection();
-      setStatus('백엔드 연결 성공 (/health ok)');
+      setStatus('백엔드 연결 성공 (/health ok)', 'success');
     } catch (err) {
-      setStatus(err.message || String(err));
+      setStatus(err.message || String(err), 'error');
     }
   });
 
@@ -299,11 +330,11 @@
     await saveSettings();
     if (authMethodEl.value === 'oauth' && !suppressAutoOAuth) {
       try {
-        setStatus('OAuth 인증 페이지 여는 중...');
+        setStatus('OAuth 인증 페이지 여는 중...', 'loading');
         const status = await startOAuthRegistration();
-        setStatus(`OAuth 등록 완료 (${status.provider}/${status.authType || 'oauth'})`);
+        setStatus(`OAuth 등록 완료 (${status.provider}/${status.authType || 'oauth'})`, 'success');
       } catch (err) {
-        setStatus(err.message || String(err));
+        setStatus(err.message || String(err), 'error');
       }
     }
   });
@@ -312,34 +343,38 @@
     await saveSettings();
     if (authMethodEl.value === 'oauth' && !suppressAutoOAuth) {
       try {
-        setStatus('Provider 변경 감지: OAuth 인증 페이지 여는 중...');
+        setStatus('Provider 변경 감지: OAuth 인증 페이지 여는 중...', 'loading');
         const status = await startOAuthRegistration();
-        setStatus(`OAuth 등록 완료 (${status.provider}/${status.authType || 'oauth'})`);
+        setStatus(`OAuth 등록 완료 (${status.provider}/${status.authType || 'oauth'})`, 'success');
       } catch (err) {
-        setStatus(err.message || String(err));
+        setStatus(err.message || String(err), 'error');
       }
     }
   });
 
   saveKeyBtn.addEventListener('click', async () => {
     try {
-      setStatus('API 등록 중...');
+      setStatus('API 등록 중...', 'loading');
       await saveSettings();
       const result = await saveKey();
-      setStatus(`API 등록 완료 (${result.keyStatus || 'ok'})`);
+      if (result.keyStatus === 'invalid') {
+        setStatus('API Key가 유효하지 않습니다. 키를 확인해주세요.', 'error');
+      } else {
+        setStatus(`API 등록 완료 (${result.keyStatus || 'ok'})`, 'success');
+      }
     } catch (err) {
-      setStatus(err.message || String(err));
+      setStatus(err.message || String(err), 'error');
     }
   });
 
   oauthRegisterBtn.addEventListener('click', async () => {
     try {
-      setStatus('OAuth 인증 시작...');
+      setStatus('OAuth 인증 시작...', 'loading');
       await saveSettings();
       const status = await startOAuthRegistration();
-      setStatus(`OAuth 등록 완료 (${status.provider}/${status.authType || 'oauth'})`);
+      setStatus(`OAuth 등록 완료 (${status.provider}/${status.authType || 'oauth'})`, 'success');
     } catch (err) {
-      setStatus(err.message || String(err));
+      setStatus(err.message || String(err), 'error');
     }
   });
 
@@ -349,29 +384,47 @@
 
   extractBtn.addEventListener('click', async () => {
     try {
-      setStatus('페이지 추출 중...');
+      setStatus('페이지 추출 중...', 'loading');
+      setButtonsDisabled(true);
       await saveSettings();
       const data = await extractCurrentPage();
-      setStatus('페이지 추출 완료');
+      setStatus('페이지 추출 완료', 'success');
       setOutput(`제목: ${data.title}\nURL: ${data.url}\n\n${data.content.slice(0, 700)}...`);
     } catch (err) {
-      setStatus(err.message || String(err));
+      setStatus(err.message || String(err), 'error');
+    } finally {
+      setButtonsDisabled(false);
     }
   });
 
   generateBtn.addEventListener('click', async () => {
     try {
-      setStatus('스레드 생성 중...');
+      setStatus('스레드 생성 중... (AI 응답 대기)', 'loading');
+      setButtonsDisabled(true);
       await saveSettings();
       const data = await generateThread();
       const text = formatThread(data);
       setOutput(text);
       await copyToClipboard(text);
-      setStatus('스레드 생성 완료 (클립보드 자동 복사됨)');
+      setStatus('스레드 생성 완료 (클립보드 자동 복사됨)', 'success');
     } catch (err) {
-      setStatus(err.message || String(err));
+      setStatus(err.message || String(err), 'error');
+    } finally {
+      setButtonsDisabled(false);
     }
   });
+
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      if (!lastOutput) return;
+      try {
+        await copyToClipboard(lastOutput);
+        setStatus('클립보드에 복사됨', 'success');
+      } catch (err) {
+        setStatus('복사 실패: ' + (err.message || String(err)), 'error');
+      }
+    });
+  }
 
   loadSettings()
     .then(() => {
@@ -379,7 +432,7 @@
       showSettingsPanel(false);
     })
     .catch(() => {
-      setStatus('설정 로드 실패');
+      setStatus('설정 로드 실패', 'error');
       suppressAutoOAuth = false;
       showSettingsPanel(false);
     });

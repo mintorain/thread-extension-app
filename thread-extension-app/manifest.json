@@ -1,8 +1,13 @@
-﻿{
+{
   "manifest_version": 3,
-  "name": "ThreadHook MVP",
-  "description": "현재 페이지 정보를 추출해 스레드 초안을 생성하는 MVP 확장앱",
-  "version": "0.2.0",
+  "name": "ThreadHook",
+  "description": "현재 페이지 정보를 추출해 AI로 스레드 초안을 생성하는 확장앱",
+  "version": "0.3.0",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "permissions": ["activeTab", "tabs", "storage", "sidePanel"],
   "host_permissions": [
     "http://127.0.0.1:8000/*",
@@ -11,7 +16,12 @@
     "http://*/*"
   ],
   "action": {
-    "default_title": "ThreadHook"
+    "default_title": "ThreadHook",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
