@@ -3,7 +3,7 @@
 .vscode/
 .idea/
 Temp/
-docs/
+docs/*.md
 thread-extension-app/
 backend-nestjs/
 backend-fastapi/.venv/
