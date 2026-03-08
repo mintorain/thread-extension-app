@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head><title>ThreadHook Icon Generator</title></head>
+<body style="background:#222;padding:40px;font-family:sans-serif;color:#fff">
+<h2>ThreadHook Icon Generator</h2>
+<p>Right-click each icon and "Save image as" PNG. Save as icon128.png, icon48.png, icon16.png respectively.</p>
+<div style="display:flex;gap:40px;align-items:end;margin:30px 0">
+  <div style="text-align:center">
+    <canvas id="c128" width="128" height="128" style="border:1px solid #444"></canvas>
+    <p>icon128.png</p>
+  </div>
+  <div style="text-align:center">
+    <canvas id="c48" width="48" height="48" style="border:1px solid #444"></canvas>
+    <p>icon48.png</p>
+  </div>
+  <div style="text-align:center">
+    <canvas id="c16" width="16" height="16" style="border:1px solid #444;image-rendering:pixelated;width:64px;height:64px"></canvas>
+    <p>icon16.png</p>
+  </div>
+</div>
+
+<script>
+function drawIcon(canvas) {
+  const s = canvas.width;
+  const ctx = canvas.getContext('2d');
+  const u = s / 128;
+
+  // Rounded square background
+  const r = s * 0.22;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(s - r, 0);
+  ctx.quadraticCurveTo(s, 0, s, r);
+  ctx.lineTo(s, s - r);
+  ctx.quadraticCurveTo(s, s, s - r, s);
+  ctx.lineTo(r, s);
+  ctx.quadraticCurveTo(0, s, 0, s - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+
+  // Deep teal gradient background
+  const bg = ctx.createLinearGradient(0, 0, s * 0.3, s);
+  bg.addColorStop(0, '#115e59');
+  bg.addColorStop(1, '#042f2e');
+  ctx.fillStyle = bg;
+  ctx.fill();
+
+  // Ambient glow top-left
+  const glow = ctx.createRadialGradient(s*0.3, s*0.25, 0, s*0.5, s*0.5, s*0.65);
+  glow.addColorStop(0, 'rgba(94,234,212,0.10)');
+  glow.addColorStop(1, 'rgba(94,234,212,0)');
+  ctx.fillStyle = glow;
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(s * 0.5, s * 0.48);
+
+  // === Three thread lines converging into a hook ===
+  const tealBright = '#2dd4bf';
+  const tealLight = '#5eead4';
+  const tealDim = '#14b8a6';
+
+  // Thread line configs: [startX offset, color, width, length]
+  const threads = [
+    { dx: -16, color: tealDim,    w: 3.5, endY: 4 },
+    { dx:  0,  color: tealBright, w: 5,   endY: 12 },
+    { dx:  16, color: tealDim,    w: 3.5, endY: 4 },
+  ];
+
+  // Draw thread lines from top
+  threads.forEach(t => {
+    ctx.strokeStyle = t.color;
+    ctx.lineWidth = Math.max(1, t.w * u);
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = t.dx === 0 ? 1 : 0.7;
+
+    ctx.beginPath();
+    ctx.moveTo(t.dx * u, -44 * u);
+    // Slight inward curve toward center
+    ctx.quadraticCurveTo(t.dx * 0.3 * u, -20 * u, 0, t.endY * u);
+    ctx.stroke();
+  });
+
+  // === The Hook (bottom) ===
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = tealBright;
+  ctx.lineWidth = Math.max(1.5, 5.5 * u);
+  ctx.lineCap = 'round';
+
+  ctx.beginPath();
+  ctx.moveTo(0, 10 * u);
+  // Curve down and right, then loop back up (J-hook shape)
+  ctx.bezierCurveTo(
+    0, 32 * u,
+    28 * u, 38 * u,
+    28 * u, 20 * u
+  );
+  // Curve back inward (hook tip)
+  ctx.bezierCurveTo(
+    28 * u, 10 * u,
+    18 * u, 6 * u,
+    12 * u, 14 * u
+  );
+  ctx.stroke();
+
+  // Glowing dot at hook tip
+  const dotX = 12 * u, dotY = 14 * u;
+  const dotR = Math.max(1.5, 4.5 * u);
+  const dg = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, dotR * 2);
+  dg.addColorStop(0, 'rgba(94,234,212,0.5)');
+  dg.addColorStop(1, 'rgba(94,234,212,0)');
+  ctx.fillStyle = dg;
+  ctx.beginPath();
+  ctx.arc(dotX, dotY, dotR * 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = tealLight;
+  ctx.beginPath();
+  ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Small "signal" arcs from hook tip (thread broadcast feel)
+  ctx.strokeStyle = tealLight;
+  ctx.lineWidth = Math.max(0.5, 1.5 * u);
+  ctx.globalAlpha = 0.35;
+  for (let i = 1; i <= 2; i++) {
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, (8 + i * 7) * u, -Math.PI * 0.6, -Math.PI * 0.1);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+['c128', 'c48', 'c16'].forEach(id => drawIcon(document.getElementById(id)));
+</script>
+</body>
+</html>
