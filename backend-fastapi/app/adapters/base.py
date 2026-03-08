@@ -1,5 +1,6 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 from abc import ABC, abstractmethod
+from typing import List, Optional
 from pydantic import BaseModel
 
 class GenerateInput(BaseModel):
@@ -11,15 +12,15 @@ class GenerateOptions(BaseModel):
     tone: str
     length: str
     language: str = 'ko'
-    model: str | None = None
+    model: Optional[str] = None
 
 class GenerateResult(BaseModel):
     provider_used: str
     model: str
     hook: str
-    points: list[str]
+    points: List[str]
     insight: str
-    hashtags: list[str]
+    hashtags: List[str]
     source: str
     token_in: int = 0
     token_out: int = 0
@@ -34,3 +35,4 @@ class LLMAdapter(ABC):
     @abstractmethod
     async def generate_thread(self, api_key: str, data: GenerateInput, opt: GenerateOptions) -> GenerateResult:
         raise NotImplementedError
+

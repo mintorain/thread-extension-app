@@ -1,4 +1,5 @@
-﻿from pydantic import BaseModel
+from typing import Optional
+from pydantic import BaseModel
 
 class GenerateInput(BaseModel):
     title: str
@@ -9,10 +10,11 @@ class GenerateOptions(BaseModel):
     tone: str
     length: str
     language: str = 'ko'
-    model: str | None = None
+    model: Optional[str] = None
 
 class GenerateThreadRequest(BaseModel):
     input: GenerateInput
     options: GenerateOptions
     providerMode: str = 'priority'
-    provider: str | None = None
+    provider: Optional[str] = None
+

@@ -1,7 +1,14 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.routers import providers, keys, settings, content, generate, usage, auth
 
 app = FastAPI(title="ThreadHook API", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(providers.router, prefix="/v1")
 app.include_router(keys.router, prefix="/v1")
