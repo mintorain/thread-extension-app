@@ -1,0 +1,13 @@
+.git/
+.gitignore
+.vscode/
+.idea/
+Temp/
+docs/
+thread-extension-app/
+backend-nestjs/
+backend-fastapi/.venv/
+backend-fastapi/__pycache__/
+*.pyc
+*.pyo
+*.pyd
