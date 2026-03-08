@@ -1,10 +1,21 @@
 ﻿from app.adapters.base import GenerateInput, GenerateOptions, GenerateResult, LLMAdapter
 
+
 class OpenAIAdapter(LLMAdapter):
     provider_name = 'chatgpt'
 
     async def validate_key(self, api_key: str) -> bool:
-        return api_key.startswith('sk-') and len(api_key) > 10
+        # OpenAI keys vary by product/project; avoid over-restrictive prefix checks.
+        key = (api_key or '').strip()
+        if len(key) < 20:
+            return False
+
+        known_prefixes = ('sk-', 'sk-proj-', 'oai-')
+        if key.startswith(known_prefixes):
+            return True
+
+        # Fallback: accept long non-whitespace tokens for MVP environments.
+        return ' ' not in key and '\t' not in key and '\n' not in key
 
     async def generate_thread(self, api_key: str, data: GenerateInput, opt: GenerateOptions) -> GenerateResult:
         return GenerateResult(

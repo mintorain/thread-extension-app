@@ -9,6 +9,7 @@
   const settingsPanelEl = document.getElementById('settingsPanel');
   const settingsToggleBtn = document.getElementById('settingsToggleBtn');
   const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+  const testBackendBtn = document.getElementById('testBackendBtn');
 
   const apiKeyArea = document.getElementById('apiKeyArea');
   const oauthArea = document.getElementById('oauthArea');
@@ -40,6 +41,62 @@
     const mode = authMethodEl.value;
     apiKeyArea.classList.toggle('hidden', mode !== 'api_key');
     oauthArea.classList.toggle('hidden', mode !== 'oauth');
+  }
+
+  function normalizeBackendUrl(raw) {
+    const value = (raw || '').trim();
+    if (!value) throw new Error('Backend URL이 비어 있습니다.');
+    let url;
+    try {
+      url = new URL(value);
+    } catch {
+      throw new Error('Backend URL 형식이 올바르지 않습니다. 예: http://127.0.0.1:8000');
+    }
+    if (!/^https?:$/.test(url.protocol)) {
+      throw new Error('Backend URL은 http 또는 https만 지원합니다.');
+    }
+    return url.origin;
+  }
+
+  function toHelpfulError(err, backendUrl) {
+    const msg = err?.message || String(err);
+    if (/Failed to fetch|NetworkError|ERR_CONNECTION|Load failed|fetch failed/i.test(msg)) {
+      return `백엔드 연결 실패: ${backendUrl}\n1) 서버 실행 여부\n2) URL/포트 확인\n3) 다른 PC에서 접속 중이면 127.0.0.1 대신 NAS IP/도메인 사용`;
+    }
+    if (/timeout/i.test(msg)) {
+      return `백엔드 응답 지연(타임아웃): ${backendUrl} (서버 상태 확인 필요)`;
+    }
+    return msg;
+  }
+
+  async function apiFetch(path, options = {}) {
+    const backendUrl = normalizeBackendUrl(backendUrlEl.value);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(new Error('timeout')), 10000);
+
+    try {
+      const res = await fetch(`${backendUrl}${path}`, {
+        ...options,
+        signal: controller.signal
+      });
+      return res;
+    } catch (err) {
+      throw new Error(toHelpfulError(err, backendUrl));
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  async function testBackendConnection() {
+    const res = await apiFetch('/health', { method: 'GET' });
+    if (!res.ok) {
+      throw new Error(`백엔드 연결 실패: /health ${res.status}`);
+    }
+    const data = await res.json().catch(() => ({}));
+    if (data?.ok !== true) {
+      throw new Error('백엔드 응답 형식이 예상과 다릅니다. /health 확인 필요');
+    }
+    return true;
   }
 
   async function copyToClipboard(text) {
@@ -93,13 +150,12 @@
   }
 
   async function saveKey() {
-    const backendUrl = backendUrlEl.value.trim();
     const provider = providerEl.value;
     const apiKey = apiKeyEl.value.trim();
 
     if (!apiKey) throw new Error('API Key를 입력하세요.');
 
-    const res = await fetch(`${backendUrl}/v1/keys/${provider}`, {
+    const res = await apiFetch(`/v1/keys/${provider}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ apiKey })
@@ -113,8 +169,8 @@
     return res.json();
   }
 
-  async function checkOAuthStatus(backendUrl, provider) {
-    const res = await fetch(`${backendUrl}/v1/auth/oauth/status?provider=${encodeURIComponent(provider)}`);
+  async function checkOAuthStatus(provider) {
+    const res = await apiFetch(`/v1/auth/oauth/status?provider=${encodeURIComponent(provider)}`);
     if (!res.ok) return { connected: false };
     return res.json();
   }
@@ -126,10 +182,9 @@
 
     oauthInProgress = true;
     try {
-      const backendUrl = backendUrlEl.value.trim();
       const provider = providerEl.value;
 
-      const startRes = await fetch(`${backendUrl}/v1/auth/oauth/start`, {
+      const startRes = await apiFetch('/v1/auth/oauth/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider })
@@ -138,7 +193,7 @@
       if (!startRes.ok) {
         const txt = await startRes.text();
         if (startRes.status === 404) {
-          throw new Error('OAuth 엔드포인트를 찾을 수 없습니다. Backend URL을 FastAPI(127.0.0.1:8000)로 설정하세요.');
+          throw new Error('OAuth 엔드포인트를 찾을 수 없습니다. Backend URL을 FastAPI 주소로 설정하세요.');
         }
         throw new Error(`OAuth 시작 실패: ${startRes.status} ${txt}`);
       }
@@ -150,7 +205,7 @@
 
       for (let i = 0; i < 25; i += 1) {
         await new Promise((resolve) => setTimeout(resolve, 1500));
-        const status = await checkOAuthStatus(backendUrl, provider);
+        const status = await checkOAuthStatus(provider);
         if (status.connected) {
           return status;
         }
@@ -180,7 +235,6 @@
   }
 
   async function generateThread() {
-    const backendUrl = backendUrlEl.value.trim();
     const provider = providerEl.value;
     const tone = toneEl.value;
     const length = lengthEl.value;
@@ -207,7 +261,7 @@
       authMethod
     };
 
-    const res = await fetch(`${backendUrl}/v1/generate/thread`, {
+    const res = await apiFetch('/v1/generate/thread', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -227,6 +281,17 @@
 
   settingsCloseBtn.addEventListener('click', () => {
     showSettingsPanel(false);
+  });
+
+  testBackendBtn.addEventListener('click', async () => {
+    try {
+      setStatus('백엔드 연결 테스트 중...');
+      await saveSettings();
+      await testBackendConnection();
+      setStatus('백엔드 연결 성공 (/health ok)');
+    } catch (err) {
+      setStatus(err.message || String(err));
+    }
   });
 
   authMethodEl.addEventListener('change', async () => {

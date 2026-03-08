@@ -6,7 +6,16 @@ export class OpenAiAdapter implements LlmAdapter {
   readonly provider = 'chatgpt' as const;
 
   async validateKey(apiKey: string): Promise<boolean> {
-    return apiKey.startsWith('sk-') && apiKey.length > 10;
+    // OpenAI keys vary by product/project; avoid over-restrictive prefix checks.
+    const key = (apiKey || '').trim();
+    if (key.length < 20) return false;
+
+    if (key.startsWith('sk-') || key.startsWith('sk-proj-') || key.startsWith('oai-')) {
+      return true;
+    }
+
+    // Fallback: accept long non-whitespace tokens for MVP environments.
+    return !/\s/.test(key);
   }
 
   async generateThread(apiKey: string, input: GenerateInput, options: GenerateOptions): Promise<GenerateResult> {

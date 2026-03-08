@@ -67,3 +67,15 @@ npm run start:dev
 ## 참고
 - 현재 서버 키 저장은 데모용 템플릿 구조이며, 운영 환경에서는 DB + KMS 기반 암호화 저장으로 교체해야 합니다.
 - 일부 브라우저 내부 페이지에서는 콘텐츠 추출이 제한될 수 있습니다.
+
+## Railway 배포
+ackend-fastapi는 Railway에 바로 배포할 수 있도록 Dockerfile이 포함되어 있습니다.
+
+1. Railway에서 GitHub 저장소 연결
+2. 서비스 Root Directory를 ackend-fastapi로 설정
+3. 배포 완료 후 /health 확인
+
+예시:
+- https://<railway-domain>/health -> {\"ok\":true}
+
+확장앱 Backend URL에는 Railway 도메인을 입력하면 됩니다.

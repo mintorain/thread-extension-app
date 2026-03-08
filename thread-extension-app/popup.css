@@ -179,3 +179,7 @@ button.sub {
 .footer-row a:hover {
   text-decoration: underline;
 }
+
+.inline-actions {
+  margin-top: 6px;
+}

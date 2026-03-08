@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ThreadHook Side Panel</title>
+  <title>ThreadHook MVP</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
@@ -40,6 +40,9 @@
 
       <label class="label">Backend URL</label>
       <input id="backendUrl" class="input" type="text" value="http://127.0.0.1:8000" />
+      <div class="inline-actions">
+        <button id="testBackendBtn" class="mini-btn">백엔드 연결 테스트</button>
+      </div>
 
       <label class="label">Provider</label>
       <select id="provider" class="input">
@@ -131,4 +134,3 @@
   <script src="popup.js"></script>
 </body>
 </html>
-
