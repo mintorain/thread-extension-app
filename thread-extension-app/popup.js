@@ -427,6 +427,12 @@
       try {
         await copyToClipboard(lastOutput);
         setStatus('클립보드에 복사됨', 'success');
+        copyBtn.textContent = '복사 완료!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = '클립보드에 복사';
+          copyBtn.classList.remove('copied');
+        }, 1500);
       } catch (err) {
         setStatus('복사 실패: ' + (err.message || String(err)), 'error');
       }

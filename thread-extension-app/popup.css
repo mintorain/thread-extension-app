@@ -225,4 +225,9 @@ button.sub {
   background: #e2e8f0;
   font-size: 11px;
   padding: 5px 10px;
+  transition: background 0.2s, color 0.2s;
+}
+.copy-btn.copied {
+  background: #0f766e;
+  color: #fff;
 }
