@@ -1,81 +1,77 @@
-﻿# Thread Extension App
+# ThreadHook
 
-브라우저에서 보고 있는 뉴스/블로그 페이지를 기반으로 스레드형 정보글 초안을 생성하는 MVP 프로젝트입니다.
+브라우저에서 보고 있는 뉴스/블로그 페이지를 기반으로 AI가 스레드형 정보글 초안을 생성하는 Chrome 확장앱입니다.
 
-## 구성
-- `thread-extension-app`: Chrome 확장앱(MVP)
-- `backend-fastapi`: FastAPI 서버 템플릿
-- `backend-nestjs`: NestJS 서버 템플릿
-- `docs`: 기획/명세 문서 및 설치 온보딩 페이지
-
-## 주요 기능(MVP)
-- 현재 페이지 제목/URL/본문 추출
-- Provider 선택 및 API Key 저장
-- 스레드 초안 생성 요청
+## 주요 기능
+- 현재 페이지 제목/URL/본문 자동 추출
+- 멀티 AI Provider 지원 (Claude, ChatGPT, Gemini, Grok)
+- Tone(전문/중립/캐주얼) 및 Length(짧게/보통/길게) 선택
 - 생성 결과 클립보드 자동 복사
 
-## 빠른 시작
+## 빠른 시작 (서버 설치 없이 바로 사용)
 
-### 1) 저장소 준비
-```bash
-git clone https://github.com/mintorain/thread-extension-app.git
-cd thread-extension-app
-```
+백엔드가 이미 배포되어 있어 별도 서버 설치 없이 확장앱만 설치하면 됩니다.
 
-### 2) 백엔드 실행 (둘 중 하나)
+### 1) 확장앱 설치
+1. [저장소 ZIP 다운로드](https://github.com/mintorain/thread-extension-app/archive/refs/heads/master.zip) 또는 `git clone`
+2. Chrome에서 `chrome://extensions` 접속
+3. 우측 상단 **개발자 모드** ON
+4. **압축해제된 확장 프로그램을 로드** 클릭
+5. `thread-extension-app` 폴더 선택
 
-#### FastAPI
+### 2) API Key 등록
+1. 확장앱 아이콘 클릭 (사이드 패널 열림)
+2. 설정(⚙) 아이콘 클릭
+3. **Backend URL**: `https://threadhook-api-production.up.railway.app` (기본값)
+4. **Provider** 선택 (claude / chatgpt / gemini / grok)
+5. **API Key** 입력 후 `API 등록` 클릭
+
+### 3) 스레드 생성
+1. 뉴스/블로그 페이지를 연 상태에서 확장앱 사이드 패널 열기
+2. `페이지 추출` 클릭
+3. Tone / Length 선택
+4. `스레드 생성` 클릭
+5. 결과가 자동으로 클립보드에 복사됨
+
+## 구성
+
+| 폴더 | 설명 |
+|------|------|
+| `thread-extension-app/` | Chrome 확장앱 (Manifest V3, Side Panel) |
+| `backend-fastapi/` | FastAPI 백엔드 서버 |
+| `backend-nestjs/` | NestJS 백엔드 서버 (대안) |
+| `docs/` | 기획/명세 문서 및 온보딩 페이지 |
+
+## 배포 정보
+
+- **백엔드 URL**: https://threadhook-api-production.up.railway.app
+- **Health 체크**: https://threadhook-api-production.up.railway.app/health
+
+## 로컬 개발 (선택사항)
+
+로컬에서 백엔드를 직접 실행하려면:
+
 ```bash
 cd backend-fastapi
 python -m venv .venv
-. .venv/Scripts/Activate.ps1
+.venv/Scripts/activate   # Windows
+# source .venv/bin/activate  # Mac/Linux
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-#### NestJS
-```bash
-cd backend-nestjs
-npm install
-npm run start:dev
-```
+확장앱 설정에서 Backend URL을 `http://127.0.0.1:8000`으로 변경하면 로컬 서버를 사용합니다.
 
-### 3) Chrome 확장앱 설치
-1. Chrome에서 `chrome://extensions` 접속
-2. 우측 상단 `개발자 모드` ON
-3. `압축해제된 확장 프로그램을 로드` 클릭
-4. 사용자가 내려받은 저장소 위치의 `thread-extension-app` 폴더 선택
+## 지원 Provider 및 API Key 발급
 
-### 4) 확장앱 사용
-1. 확장 아이콘 클릭
-2. `Backend URL` 입력
-  - FastAPI: `http://127.0.0.1:8000`
-  - NestJS: `http://127.0.0.1:3000`
-3. Provider 선택 + API Key 입력 후 `키 저장`
-4. `페이지 추출` -> `스레드 생성`
-5. 생성 성공 시 결과가 자동으로 클립보드에 복사됨
-
-## 설치 안내 페이지
-- 로컬 파일: `docs/install-landing.html`
-- 브라우저에서 열면 스크린샷 포함 온보딩 가이드를 볼 수 있습니다.
-
-## 문서
-- `docs/03_PRD_및_API명세.md`: PRD + API 명세
-- `docs/04_DB스키마_SQL_및_OpenAPI초안.md`: DB 스키마 + OpenAPI 초안
-- `docs/05_FastAPI_NestJS_서버구조_핸들러템플릿.md`: 서버 구조/핸들러 템플릿
+| Provider | API Key 발급처 | Key 형식 |
+|----------|---------------|---------|
+| Claude | https://console.anthropic.com | `sk-ant-...` |
+| ChatGPT | https://platform.openai.com/api-keys | `sk-...` |
+| Gemini | https://aistudio.google.com/apikey | 영숫자 문자열 |
+| Grok | https://console.x.ai | `xai-...` |
 
 ## 참고
-- 현재 서버 키 저장은 데모용 템플릿 구조이며, 운영 환경에서는 DB + KMS 기반 암호화 저장으로 교체해야 합니다.
-- 일부 브라우저 내부 페이지에서는 콘텐츠 추출이 제한될 수 있습니다.
-
-## Railway 배포
-ackend-fastapi는 Railway에 바로 배포할 수 있도록 Dockerfile이 포함되어 있습니다.
-
-1. Railway에서 GitHub 저장소 연결
-2. 서비스 Root Directory를 ackend-fastapi로 설정
-3. 배포 완료 후 /health 확인
-
-예시:
-- https://<railway-domain>/health -> {\"ok\":true}
-
-확장앱 Backend URL에는 Railway 도메인을 입력하면 됩니다.
+- API Key는 서버 메모리에 임시 저장됩니다 (서버 재시작 시 초기화).
+- Chrome 내부 페이지(`chrome://`)에서는 콘텐츠 추출이 제한됩니다.
+- API 사용량과 비용은 각 Provider 콘솔에서 확인하세요.

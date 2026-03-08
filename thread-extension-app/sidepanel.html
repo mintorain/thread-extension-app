@@ -74,36 +74,45 @@
         <h3>상세 매뉴얼</h3>
 
         <details open>
-          <summary>1) OAuth(어소) 인증 방법</summary>
+          <summary>1) API Key 등록 (필수)</summary>
           <ol>
             <li>설정(⚙) 아이콘 클릭</li>
-            <li>Backend URL을 <code>https://threadhook-api-production.up.railway.app</code>으로 설정 (기본값)</li>
-            <li>Provider 선택</li>
-            <li>인증 방식에서 <code>OAuth(어소)</code> 선택</li>
-            <li>인증 페이지가 자동으로 열리면 <strong>승인</strong> 클릭</li>
-            <li>팝업 상태가 <code>OAuth 등록 완료</code>로 바뀌면 완료</li>
+            <li>Backend URL 확인: <code>https://threadhook-api-production.up.railway.app</code> (기본값, 수정 불필요)</li>
+            <li>Provider 선택 (claude / chatgpt / gemini / grok)</li>
+            <li>인증 방식: <code>API</code> 선택</li>
+            <li>API Key 입력 후 <code>API 등록</code> 클릭</li>
+            <li>상태가 <code>API 등록 완료</code>로 표시되면 완료</li>
           </ol>
         </details>
 
         <details>
-          <summary>2) API 등록 방법</summary>
+          <summary>2) 스레드 생성 방법</summary>
           <ol>
-            <li>설정(⚙) 아이콘 클릭</li>
-            <li>Provider 선택</li>
-            <li>인증 방식에서 <code>API</code> 선택</li>
-            <li>API Key 입력 후 <code>API 등록</code> 버튼 클릭</li>
-            <li>상태가 <code>API Key 저장 완료</code>로 표시되면 완료</li>
-          </ol>
-        </details>
-
-        <details>
-          <summary>3) 사용 방법</summary>
-          <ol>
-            <li>뉴스/블로그 페이지를 연 상태에서 확장앱 사이드바 열기</li>
-            <li><code>페이지 추출</code> 클릭</li>
-            <li>Tone/Length 선택</li>
-            <li><code>스레드 생성</code> 클릭</li>
+            <li>뉴스/블로그 페이지를 연 상태에서 확장앱 아이콘 클릭</li>
+            <li><code>페이지 추출</code> 클릭하여 본문 가져오기</li>
+            <li>Tone(전문/중립/캐주얼), Length(짧게/보통/길게) 선택</li>
+            <li><code>스레드 생성</code> 클릭 (AI 응답까지 수 초 소요)</li>
             <li>결과가 자동으로 클립보드에 복사됨</li>
+          </ol>
+        </details>
+
+        <details>
+          <summary>3) API Key 발급처</summary>
+          <ol>
+            <li><strong>Claude</strong>: console.anthropic.com (sk-ant-...)</li>
+            <li><strong>ChatGPT</strong>: platform.openai.com/api-keys (sk-...)</li>
+            <li><strong>Gemini</strong>: aistudio.google.com/apikey</li>
+            <li><strong>Grok</strong>: console.x.ai (xai-...)</li>
+          </ol>
+        </details>
+
+        <details>
+          <summary>4) 문제 해결</summary>
+          <ol>
+            <li><strong>API Key 유효하지 않음</strong>: Provider 콘솔에서 키 재확인</li>
+            <li><strong>백엔드 연결 실패</strong>: 연결 테스트 버튼으로 확인</li>
+            <li><strong>페이지 추출 실패</strong>: 페이지 새로고침 후 재시도</li>
+            <li><strong>서버 재시작 후 키 초기화</strong>: API Key 재등록 필요</li>
           </ol>
         </details>
       </section>
