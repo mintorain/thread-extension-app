@@ -87,7 +87,6 @@
       align-items: flex-start;
     }
     .check li:first-child { border-top: 0; }
-
     .dot {
       width: 18px; height: 18px; border-radius: 999px;
       background: #fef3c7; color: #92400e;
@@ -103,28 +102,36 @@
     }
     button.secondary { background: #e2e8f0; color: #0f172a; }
 
-    .shots {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-    .shot {
-      border: 1px solid #dce3ea;
-      border-radius: 14px;
-      overflow: hidden;
-      background: #fff;
-    }
-    .shot img {
-      width: 100%;
-      display: block;
+    .shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .shot { border: 1px solid #dce3ea; border-radius: 14px; overflow: hidden; background: #fff; }
+    .shot img { width: 100%; display: block; background: #f8fafc; }
+    .cap { padding: 10px 12px; font-size: 13px; color: var(--muted); border-top: 1px solid #eef2f7; }
+
+    .download-box {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
       background: #f8fafc;
     }
-    .cap {
-      padding: 10px 12px;
-      font-size: 13px;
-      color: var(--muted);
-      border-top: 1px solid #eef2f7;
+    .download-btn {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #0f766e;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
     }
+
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; font-size: 14px; }
+    .contact-item { padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 10px; background: #f8fafc; }
+    .contact-item strong { display: block; font-size: 12px; color: #475569; margin-bottom: 2px; }
+    .contact-item a { color: #0f766e; text-decoration: none; word-break: break-all; }
 
     .warn {
       padding: 10px 12px;
@@ -135,39 +142,10 @@
       font-size: 13px;
       margin-top: 12px;
     }
-    .contact-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px 16px;
-      font-size: 14px;
-    }
 
-    .contact-item {
-      padding: 8px 10px;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      background: #f8fafc;
-    }
-
-    .contact-item strong {
-      display: block;
-      font-size: 12px;
-      color: #475569;
-      margin-bottom: 2px;
-    }
-
-    .contact-item a {
-      color: #0f766e;
-      text-decoration: none;
-      word-break: break-all;
-    }
-
-    .contact-item a:hover {
-      text-decoration: underline;
-    }
     @media (max-width: 860px) {
       .span-7, .span-5, .span-12 { grid-column: span 12; }
-      .shots { grid-template-columns: 1fr; }
+      .shots, .contact-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -220,7 +198,7 @@
         <ul class="check">
           <li><span class="dot">!</span><span>백엔드 실행: FastAPI(<span class="mono">http://127.0.0.1:8000</span>) 또는 NestJS(<span class="mono">http://127.0.0.1:3000</span>)</span></li>
           <li><span class="dot">!</span><span>확장 아이콘 클릭 후 Backend URL 입력</span></li>
-          <li><span class="dot">!</span><span>Provider 선택 + API Key 저장</span></li>
+          <li><span class="dot">!</span><span>Provider 선택 + API Key 또는 OAuth 등록</span></li>
           <li><span class="dot">!</span><span>페이지 추출 → 스레드 생성</span></li>
           <li><span class="dot">!</span><span>생성 완료 시 클립보드 자동복사 확인</span></li>
         </ul>
@@ -234,8 +212,8 @@
             <figcaption class="cap">설치 화면: 우측 상단 개발자 모드를 먼저 켠 뒤, 상단의 "압축해제된 확장 프로그램을 로드" 버튼을 사용합니다.</figcaption>
           </figure>
           <figure class="shot">
-            <img src="assets/extension-popup.png" alt="ThreadHook 팝업 스크린샷" />
-            <figcaption class="cap">팝업 화면: Backend URL, Provider, API Key 입력 후 페이지 추출/스레드 생성을 실행합니다.</figcaption>
+            <img src="assets/extension-popup.png" alt="ThreadHook 사이드바 스크린샷" />
+            <figcaption class="cap">사이드바 화면: 설정(⚙)에서 API/OAuth 등록 후 페이지 추출 및 생성을 실행합니다.</figcaption>
           </figure>
         </div>
       </article>
@@ -246,27 +224,31 @@
           <div class="num">A</div>
           <div>
             <p class="step-title">"페이지 추출 실패"가 뜰 때</p>
-            <p>해당 탭을 새로고침하고 확장 팝업을 다시 열어 시도합니다.</p>
+            <p>해당 탭을 새로고침하고 확장 사이드바을 다시 열어 시도합니다.</p>
           </div>
         </div>
         <div class="step">
           <div class="num">B</div>
           <div>
             <p class="step-title">"생성 실패"가 뜰 때</p>
-            <p>백엔드 서버 실행 여부, Backend URL, API Key 저장 성공 여부를 확인합니다.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="num">C</div>
-          <div>
-            <p class="step-title">일부 페이지에서 작동하지 않을 때</p>
-            <p>브라우저 내부 페이지는 콘텐츠 스크립트 제한으로 추출이 안 될 수 있습니다.</p>
+            <p>백엔드 서버 실행 여부, Backend URL, 등록 방식(API/OAuth), 인증 완료 상태를 확인합니다.</p>
           </div>
         </div>
         <div class="warn">확장앱 파일을 수정한 뒤에는 chrome://extensions 에서 해당 확장의 "새로고침"을 눌러 변경사항을 반영하세요.</div>
       </article>
+
       <article class="card span-12">
-        <h2>5) 운영/문의 정보</h2>
+        <h2>5) 다운로드 링크</h2>
+        <div class="download-box">
+          <a class="download-btn" href="./thread-extension-app.zip" download>확장앱 ZIP 다운로드</a>
+          <a class="download-btn" href="./downloads/thread-extension-app.zip" download>대체 링크</a>
+          <span>다운로드 후 압축을 해제하고, <span class="mono">thread-extension-app</span> 폴더를 Chrome 확장프로그램에서 로드하세요.</span>
+          <span class="mono">직접경로: ./thread-extension-app.zip 또는 ./downloads/thread-extension-app.zip</span>
+        </div>
+      </article>
+
+      <article class="card span-12">
+        <h2>6) 운영/문의 정보</h2>
         <div class="contact-grid">
           <div class="contact-item"><strong>기관</strong>미래이음연구소</div>
           <div class="contact-item"><strong>개발</strong>민토레인</div>
@@ -279,6 +261,34 @@
           <div class="contact-item"><strong>X</strong><a href="https://x.com/mintorain7" target="_blank" rel="noopener noreferrer">https://x.com/mintorain7</a></div>
           <div class="contact-item"><strong>카카오톡 오픈채팅</strong><a href="https://open.kakao.com/o/gpLP613g" target="_blank" rel="noopener noreferrer">https://open.kakao.com/o/gpLP613g</a></div>
           <div class="contact-item"><strong>고객센터</strong><a href="http://pf.kakao.com/_UzjZG/chat" target="_blank" rel="noopener noreferrer">http://pf.kakao.com/_UzjZG/chat</a></div>
+        </div>
+      </article>
+
+      <article class="card span-12">
+        <h2>7) 상세 매뉴얼 (API / OAuth / 사용)</h2>
+
+        <div class="step">
+          <div class="num">A</div>
+          <div>
+            <p class="step-title">API 등록 방법</p>
+            <p>확장앱 사이드바 우측 상단의 <strong>설정(⚙)</strong> 아이콘을 눌러 설정 패널을 열고, Provider 선택 후 인증 방식을 <strong>API</strong>로 선택합니다. API Key를 입력하고 <strong>API 등록</strong> 버튼을 누릅니다.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">B</div>
+          <div>
+            <p class="step-title">OAuth(어소) 인증 방법</p>
+            <p>설정 패널에서 인증 방식을 <strong>OAuth(어소)</strong>로 선택하면 인증 페이지가 열립니다. 인증 페이지에서 <strong>승인</strong>을 누르면 사이드바 상태가 <strong>OAuth 등록 완료</strong>로 변경됩니다.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">C</div>
+          <div>
+            <p class="step-title">사용 방법</p>
+            <p>뉴스/블로그 페이지에서 사이드바을 열고 <strong>페이지 추출</strong> → Tone/Length 선택 → <strong>스레드 생성</strong> 순서로 실행합니다. 생성 완료 시 결과가 자동으로 클립보드에 복사됩니다.</p>
+          </div>
         </div>
       </article>
     </section>
@@ -297,13 +307,11 @@
     document.getElementById('copyPathBtn').addEventListener('click', () => {
       copy(document.getElementById('extPath').textContent.trim());
     });
+
     document.getElementById('copyChromeBtn').addEventListener('click', () => {
       copy('chrome://extensions');
     });
   </script>
 </body>
 </html>
-
-
-
 

@@ -9,9 +9,25 @@ body {
 .app {
   padding: 12px;
 }
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
 h1 {
-  margin: 0 0 10px;
+  margin: 0;
   font-size: 16px;
+}
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: #e2e8f0;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
 }
 .label {
   display: block;
@@ -26,14 +42,11 @@ h1 {
   border-radius: 8px;
   background: #fff;
 }
-.row {
+.quick-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-top: 8px;
-}
-.row.single {
-  grid-template-columns: 1fr;
+  margin-top: 2px;
 }
 button {
   border: 0;
@@ -42,16 +55,22 @@ button {
   cursor: pointer;
   background: #dbe1e8;
 }
+button.primary {
+  background: #0f766e;
+  color: #fff;
+}
 button.sub {
   width: 100%;
   margin-top: 8px;
   background: #e2e8f0;
 }
-button.primary {
-  width: 100%;
-  margin-top: 10px;
-  background: #0f766e;
-  color: #fff;
+.mini-btn {
+  border: 0;
+  border-radius: 6px;
+  padding: 5px 8px;
+  background: #e2e8f0;
+  cursor: pointer;
+  font-size: 11px;
 }
 .hidden {
   display: none;
@@ -60,6 +79,54 @@ button.primary {
   margin: 6px 2px 0;
   color: #64748b;
   font-size: 11px;
+}
+.settings-panel {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel-head h2 {
+  margin: 0;
+  font-size: 14px;
+}
+.manual {
+  margin-top: 10px;
+  border-top: 1px dashed #d1d5db;
+  padding-top: 8px;
+}
+.manual h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+.manual details {
+  margin: 6px 0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+.manual summary {
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.manual ol {
+  margin: 6px 0 2px 18px;
+  padding: 0;
+  font-size: 11px;
+}
+.manual code {
+  background: #eef2ff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 1px 4px;
 }
 .status {
   min-height: 30px;

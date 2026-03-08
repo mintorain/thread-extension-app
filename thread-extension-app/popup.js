@@ -5,16 +5,24 @@
   const apiKeyEl = document.getElementById('apiKey');
   const toneEl = document.getElementById('tone');
   const lengthEl = document.getElementById('length');
+
+  const settingsPanelEl = document.getElementById('settingsPanel');
+  const settingsToggleBtn = document.getElementById('settingsToggleBtn');
+  const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+
   const apiKeyArea = document.getElementById('apiKeyArea');
   const oauthArea = document.getElementById('oauthArea');
   const saveKeyBtn = document.getElementById('saveKeyBtn');
   const oauthRegisterBtn = document.getElementById('oauthRegisterBtn');
+
   const extractBtn = document.getElementById('extractBtn');
   const generateBtn = document.getElementById('generateBtn');
   const statusEl = document.getElementById('status');
   const outputEl = document.getElementById('output');
 
   let extracted = null;
+  let suppressAutoOAuth = true;
+  let oauthInProgress = false;
 
   function setStatus(msg) {
     statusEl.textContent = msg;
@@ -22,6 +30,10 @@
 
   function setOutput(msg) {
     outputEl.value = msg;
+  }
+
+  function showSettingsPanel(show) {
+    settingsPanelEl.classList.toggle('hidden', !show);
   }
 
   function applyAuthMode() {
@@ -95,7 +107,7 @@
 
     if (!res.ok) {
       const txt = await res.text();
-      throw new Error(`키 저장 실패: ${res.status} ${txt}`);
+      throw new Error(`API 등록 실패: ${res.status} ${txt}`);
     }
 
     return res.json();
@@ -108,34 +120,46 @@
   }
 
   async function startOAuthRegistration() {
-    const backendUrl = backendUrlEl.value.trim();
-    const provider = providerEl.value;
-
-    const startRes = await fetch(`${backendUrl}/v1/auth/oauth/start`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ provider })
-    });
-
-    if (!startRes.ok) {
-      const txt = await startRes.text();
-      throw new Error(`OAuth 시작 실패: ${startRes.status} ${txt}`);
+    if (oauthInProgress) {
+      return { provider: providerEl.value, authType: 'oauth' };
     }
 
-    const startData = await startRes.json();
-    if (!startData.authorizationUrl) throw new Error('OAuth authorization URL이 없습니다.');
+    oauthInProgress = true;
+    try {
+      const backendUrl = backendUrlEl.value.trim();
+      const provider = providerEl.value;
 
-    await chrome.tabs.create({ url: startData.authorizationUrl });
+      const startRes = await fetch(`${backendUrl}/v1/auth/oauth/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider })
+      });
 
-    for (let i = 0; i < 25; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      const status = await checkOAuthStatus(backendUrl, provider);
-      if (status.connected) {
-        return status;
+      if (!startRes.ok) {
+        const txt = await startRes.text();
+        if (startRes.status === 404) {
+          throw new Error('OAuth 엔드포인트를 찾을 수 없습니다. Backend URL을 FastAPI(127.0.0.1:8000)로 설정하세요.');
+        }
+        throw new Error(`OAuth 시작 실패: ${startRes.status} ${txt}`);
       }
-    }
 
-    throw new Error('OAuth 인증 확인 시간 초과. 인증 페이지에서 승인을 완료했는지 확인하세요.');
+      const startData = await startRes.json();
+      if (!startData.authorizationUrl) throw new Error('OAuth authorization URL이 없습니다.');
+
+      await chrome.tabs.create({ url: startData.authorizationUrl });
+
+      for (let i = 0; i < 25; i += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        const status = await checkOAuthStatus(backendUrl, provider);
+        if (status.connected) {
+          return status;
+        }
+      }
+
+      throw new Error('OAuth 인증 확인 시간 초과. 인증 페이지에서 승인을 완료했는지 확인하세요.');
+    } finally {
+      oauthInProgress = false;
+    }
   }
 
   function formatThread(data) {
@@ -197,17 +221,47 @@
     return res.json();
   }
 
+  settingsToggleBtn.addEventListener('click', () => {
+    showSettingsPanel(settingsPanelEl.classList.contains('hidden'));
+  });
+
+  settingsCloseBtn.addEventListener('click', () => {
+    showSettingsPanel(false);
+  });
+
   authMethodEl.addEventListener('change', async () => {
     applyAuthMode();
     await saveSettings();
+    if (authMethodEl.value === 'oauth' && !suppressAutoOAuth) {
+      try {
+        setStatus('OAuth 인증 페이지 여는 중...');
+        const status = await startOAuthRegistration();
+        setStatus(`OAuth 등록 완료 (${status.provider}/${status.authType || 'oauth'})`);
+      } catch (err) {
+        setStatus(err.message || String(err));
+      }
+    }
+  });
+
+  providerEl.addEventListener('change', async () => {
+    await saveSettings();
+    if (authMethodEl.value === 'oauth' && !suppressAutoOAuth) {
+      try {
+        setStatus('Provider 변경 감지: OAuth 인증 페이지 여는 중...');
+        const status = await startOAuthRegistration();
+        setStatus(`OAuth 등록 완료 (${status.provider}/${status.authType || 'oauth'})`);
+      } catch (err) {
+        setStatus(err.message || String(err));
+      }
+    }
   });
 
   saveKeyBtn.addEventListener('click', async () => {
     try {
-      setStatus('API Key 저장 중...');
+      setStatus('API 등록 중...');
       await saveSettings();
       const result = await saveKey();
-      setStatus(`API Key 저장 완료 (${result.keyStatus || 'ok'})`);
+      setStatus(`API 등록 완료 (${result.keyStatus || 'ok'})`);
     } catch (err) {
       setStatus(err.message || String(err));
     }
@@ -223,6 +277,10 @@
       setStatus(err.message || String(err));
     }
   });
+
+  backendUrlEl.addEventListener('change', saveSettings);
+  toneEl.addEventListener('change', saveSettings);
+  lengthEl.addEventListener('change', saveSettings);
 
   extractBtn.addEventListener('click', async () => {
     try {
@@ -250,7 +308,14 @@
     }
   });
 
-  loadSettings().catch(() => {
-    setStatus('설정 로드 실패');
-  });
+  loadSettings()
+    .then(() => {
+      suppressAutoOAuth = false;
+      showSettingsPanel(false);
+    })
+    .catch(() => {
+      setStatus('설정 로드 실패');
+      suppressAutoOAuth = false;
+      showSettingsPanel(false);
+    });
 })();
