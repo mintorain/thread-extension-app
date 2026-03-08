@@ -299,8 +299,15 @@
     });
 
     if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(`생성 실패: ${res.status} ${txt}`);
+      let msg = `생성 실패 (${res.status})`;
+      try {
+        const errBody = await res.json();
+        if (errBody.detail) msg = errBody.detail;
+      } catch {
+        const txt = await res.text();
+        if (txt) msg = txt;
+      }
+      throw new Error(msg);
     }
 
     return res.json();
