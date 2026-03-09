@@ -200,6 +200,30 @@ button.sub {
 .footer-row a:hover {
   text-decoration: underline;
 }
+.footer-icons {
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+}
+.footer-icons a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #e2e8f0;
+  color: #475569;
+  transition: background 0.15s, color 0.15s;
+}
+.footer-icons a:hover {
+  background: #0f766e;
+  color: #fff;
+}
+.footer-icons svg {
+  width: 15px;
+  height: 15px;
+}
 
 .inline-actions {
   margin-top: 6px;
