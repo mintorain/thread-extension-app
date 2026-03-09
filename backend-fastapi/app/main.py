@@ -23,10 +23,13 @@ app.include_router(generate.router, prefix="/v1")
 app.include_router(usage.router, prefix="/v1")
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+_static_ready = STATIC_DIR.is_dir()
 
-if STATIC_DIR.is_dir():
-    app.mount("/assets", StaticFiles(directory=str(STATIC_DIR / "assets")), name="assets")
-    app.mount("/downloads", StaticFiles(directory=str(STATIC_DIR / "downloads")), name="downloads")
+if _static_ready:
+    if (STATIC_DIR / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=str(STATIC_DIR / "assets")), name="assets")
+    if (STATIC_DIR / "downloads").is_dir():
+        app.mount("/downloads", StaticFiles(directory=str(STATIC_DIR / "downloads")), name="downloads")
 
 
 @app.get('/health')
@@ -39,4 +42,10 @@ async def landing_page():
     index = STATIC_DIR / "index.html"
     if index.is_file():
         return FileResponse(str(index), media_type="text/html")
-    return {"message": "ThreadHook API", "docs": "/docs"}
+    return {
+        "message": "ThreadHook API",
+        "docs": "/docs",
+        "static_dir": str(STATIC_DIR),
+        "static_exists": _static_ready,
+        "index_exists": index.is_file(),
+    }
