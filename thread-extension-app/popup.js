@@ -171,11 +171,23 @@
     return tabs[0];
   }
 
+  async function ensureContentScript(tabId) {
+    try {
+      await chrome.tabs.sendMessage(tabId, { type: 'THREADHOOK_PING' });
+    } catch {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['content.js'],
+      });
+    }
+  }
+
   async function extractCurrentPage() {
     const tab = await getActiveTab();
     if (tab.url && (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://'))) {
       throw new Error('Chrome 내부 페이지에서는 콘텐츠를 추출할 수 없습니다. 뉴스/블로그 페이지에서 시도하세요.');
     }
+    await ensureContentScript(tab.id);
     const response = await chrome.tabs.sendMessage(tab.id, { type: 'THREADHOOK_EXTRACT' });
     if (!response || !response.ok) {
       throw new Error('페이지 추출 실패. 페이지를 새로고침한 후 다시 시도하세요.');
