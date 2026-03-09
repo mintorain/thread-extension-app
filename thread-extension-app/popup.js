@@ -214,14 +214,13 @@
     return res.json();
   }
 
+  const metaInfoEl = document.getElementById('metaInfo');
+
   function formatThread(data) {
     const t = data.thread || {};
     const points = Array.isArray(t.points) ? t.points.map((p, i) => `${i + 1}. ${p}`).join('\n') : '';
     const hashtags = Array.isArray(t.hashtags) ? t.hashtags.join(' ') : '';
-    const metrics = data.metrics || {};
-    return [
-      `[${data.providerUsed}/${data.model}]`,
-      '',
+    const threadText = [
       t.hook || '',
       '',
       points,
@@ -229,9 +228,22 @@
       `인사이트: ${t.insight || ''}`,
       `출처: ${t.source || ''}`,
       hashtags,
-      '',
-      metrics.tokenIn ? `(토큰: ${metrics.tokenIn} in / ${metrics.tokenOut} out)` : '',
     ].filter(Boolean).join('\n');
+
+    const metrics = data.metrics || {};
+    const modelLabel = `${data.providerUsed || ''}/${data.model || ''}`;
+    const tokenLabel = metrics.tokenIn
+      ? `토큰: ${metrics.tokenIn} in / ${metrics.tokenOut} out`
+      : '';
+
+    if (metaInfoEl) {
+      metaInfoEl.innerHTML =
+        `<span class="meta-model">${modelLabel}</span>` +
+        (tokenLabel ? `<span class="meta-token">${tokenLabel}</span>` : '');
+      metaInfoEl.classList.remove('hidden');
+    }
+
+    return threadText;
   }
 
   async function generateThread() {
