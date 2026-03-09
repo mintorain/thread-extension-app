@@ -12,9 +12,11 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY backend-fastapi/app ./app
 
 # Landing page static files
+RUN mkdir -p ./static/assets ./static/downloads
 COPY docs/index.html ./static/index.html
-COPY docs/assets ./static/assets
-COPY docs/downloads ./static/downloads
+COPY docs/assets/ ./static/assets/
+COPY docs/downloads/ ./static/downloads/
+RUN echo "=== static contents ===" && ls -R ./static/
 
 EXPOSE 8000
 
